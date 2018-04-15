@@ -17,6 +17,7 @@
 package nodomain.freeyourgadget.gadgetbridge.service.devices.pebble;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -128,6 +129,9 @@ class PebbleKitSupport {
     }
 
     void sendAppMessageIntent(GBDeviceEventAppMessage appMessage) {
+        // LIGHTING CONTROL HACK
+        sendAppMessageIntentForLights(appMessage);
+
         Intent intent = new Intent();
         intent.setAction(PEBBLEKIT_ACTION_APP_RECEIVE);
         intent.putExtra("uuid", appMessage.appUUID);
@@ -136,6 +140,24 @@ class PebbleKitSupport {
         LOG.info("broadcasting to uuid " + appMessage.appUUID + " transaction id: " + appMessage.id + " JSON: " + appMessage.message);
         mContext.sendBroadcast(intent);
     }
+
+    // ######################
+    // LIGHTING CONTROL HACK
+    // #####################
+
+    private void sendAppMessageIntentForLights(GBDeviceEventAppMessage appMessage) {
+        String internetHelperPkg = "org.mcxa.lightingcontrol";
+        String internetHelperCls = internetHelperPkg + ".PebbleReceiver";
+
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName(internetHelperPkg, internetHelperCls));
+        intent.setAction(PEBBLEKIT_ACTION_APP_RECEIVE);
+        intent.putExtra("uuid", appMessage.appUUID);
+        intent.putExtra("msg_data", appMessage.message);
+        intent.putExtra("transaction_id", appMessage.id);
+        mContext.sendBroadcast(intent);
+    }
+
 
     private void sendAppMessageAck(int transactionId) {
         Intent intent = new Intent();
