@@ -24,6 +24,7 @@ import nodomain.freeyourgadget.gadgetbridge.model.DeviceType;
 import nodomain.freeyourgadget.gadgetbridge.service.devices.huami.HuamiFirmwareInfo;
 import nodomain.freeyourgadget.gadgetbridge.service.devices.huami.HuamiFirmwareType;
 import nodomain.freeyourgadget.gadgetbridge.util.ArrayUtils;
+import nodomain.freeyourgadget.gadgetbridge.util.Version;
 
 public class AmazfitBipFirmwareInfo extends HuamiFirmwareInfo {
     // gps detection is totally bogus, just the first 16 bytes
@@ -45,20 +46,10 @@ public class AmazfitBipFirmwareInfo extends HuamiFirmwareInfo {
             (byte) 0x8c, 0x36, 0x2e, (byte) 0x8c, (byte) 0x9c, 0x08, 0x54, (byte) 0xa6
     };
 
-    // guessed - at least it is the same across versions from 0.0.7.x to 0.0.9.x
-    // and different from other devices
+    // this is the same as Cor
     private static final byte[] FW_HEADER = new byte[]{
-            0x68, 0x46, 0x70, 0x47, 0x68, 0x46, 0x70, 0x47,
-            0x68, 0x46, 0x70, 0x47, 0x68, 0x46, 0x70, 0x47
+            0x00, (byte) 0x98, 0x00, 0x20, (byte) 0xA5, 0x04, 0x00, 0x20, (byte) 0xAD, 0x04, 0x00, 0x20, (byte) 0xC5, 0x04, 0x00, 0x20
     };
-
-    // guessed - this is true for 0.1.0.11
-    private static final byte[] FW_HEADER_NEW = new byte[]{
-            0x60, (byte) 0xeb, 0x03, 0x0c, 0x70, 0x46, 0x31, 0x46,
-            0x3a, 0x46, 0x63, 0x46, (byte) 0xbd, (byte) 0xe8, (byte) 0xf0, (byte) 0x81
-    };
-
-    private static final int FW_HEADER_OFFSET = 0x9330;
 
     private static final byte[] GPS_ALMANAC_HEADER = new byte[]{ // probably wrong
             (byte) 0xa0, (byte) 0x80, 0x08, 0x00, (byte) 0x8b, 0x07
@@ -95,6 +86,11 @@ public class AmazfitBipFirmwareInfo extends HuamiFirmwareInfo {
         crcToVersion.put(1333,  "0.1.0.80");
         crcToVersion.put(12017, "0.1.0.86");
         crcToVersion.put(8276,  "0.1.1.14");
+        crcToVersion.put(5914,  "0.1.1.17");
+        crcToVersion.put(6228,  "0.1.1.29");
+        crcToVersion.put(44223, "0.1.1.31");
+        crcToVersion.put(39726, "0.1.1.36");
+        crcToVersion.put(11062, "0.1.1.39");
 
         // resources
         crcToVersion.put(12586, "0.0.8.74");
@@ -104,13 +100,16 @@ public class AmazfitBipFirmwareInfo extends HuamiFirmwareInfo {
         crcToVersion.put(22051, "0.0.9.40");
         crcToVersion.put(46233, "0.0.9.49-0.1.0.11");
         crcToVersion.put(12098, "0.1.0.17");
-        crcToVersion.put(28696, "0.1.0.26-0.1.0.27");
+        crcToVersion.put(28696, "0.1.0.26-27");
         crcToVersion.put(5650,  "0.1.0.33");
-        crcToVersion.put(16117, "0.1.0.39-0.1.0.45");
-        crcToVersion.put(22506, "0.1.0.66-0.1.0.70");
-        crcToVersion.put(42264, "0.1.0.77-0.1.0.80");
-        crcToVersion.put(55934, "0.1.0.86-0.1.0.89");
-        crcToVersion.put(26587, "0.1.1.14");
+        crcToVersion.put(16117, "0.1.0.39-45");
+        crcToVersion.put(22506, "0.1.0.66-70");
+        crcToVersion.put(42264, "0.1.0.77-80");
+        crcToVersion.put(55934, "0.1.0.86-89");
+        crcToVersion.put(26587, "0.1.1.14-25");
+        crcToVersion.put(7446,  "0.1.1.29");
+        crcToVersion.put(47887, "0.1.1.31-36");
+        crcToVersion.put(14334, "0.1.1.39");
 
         // gps
         crcToVersion.put(61520, "9367,8f79a91,0,0,");
@@ -130,7 +129,7 @@ public class AmazfitBipFirmwareInfo extends HuamiFirmwareInfo {
     @Override
     protected HuamiFirmwareType determineFirmwareType(byte[] bytes) {
         if (ArrayUtils.startsWith(bytes, RES_HEADER) || ArrayUtils.startsWith(bytes, NEWRES_HEADER)) {
-            if (bytes.length > 500000) { // dont know how to distinguish from Cor .res
+            if (bytes.length > 700000) { // dont know how to distinguish from Cor .res
                 return HuamiFirmwareType.INVALID;
             }
             return HuamiFirmwareType.RES;
@@ -144,9 +143,15 @@ public class AmazfitBipFirmwareInfo extends HuamiFirmwareInfo {
         if (ArrayUtils.startsWith(bytes, GPS_CEP_HEADER)) {
             return HuamiFirmwareType.GPS_CEP;
         }
-        if (ArrayUtils.equals(bytes, FW_HEADER, FW_HEADER_OFFSET) || ArrayUtils.equals(bytes, FW_HEADER_NEW, FW_HEADER_OFFSET)) {
-            // TODO: this is certainly not a correct validation, but it works for now
-            return HuamiFirmwareType.FIRMWARE;
+        if (ArrayUtils.startsWith(bytes, FW_HEADER)) {
+            String foundVersion = searchFirmwareVersion(bytes);
+            if (foundVersion != null) {
+                Version version = new Version(foundVersion);
+                if ((version.compareTo(new Version("0.0.8.00")) >= 0) && (version.compareTo(new Version("1.0.5.00")) < 0)) {
+                    return HuamiFirmwareType.FIRMWARE;
+                }
+            }
+            return HuamiFirmwareType.INVALID;
         }
         if (ArrayUtils.startsWith(bytes, WATCHFACE_HEADER)) {
             return HuamiFirmwareType.WATCHFACE;
