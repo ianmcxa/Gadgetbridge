@@ -60,7 +60,10 @@ import nodomain.freeyourgadget.gadgetbridge.util.GB;
 import nodomain.freeyourgadget.gadgetbridge.util.GBPrefs;
 import nodomain.freeyourgadget.gadgetbridge.util.Prefs;
 
+import static nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst.PREF_MI2_DATEFORMAT;
 import static nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst.PREF_MI2_DISPLAY_ITEMS;
+import static nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst.PREF_MI2_ENABLE_TEXT_NOTIFICATIONS;
+import static nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst.PREF_MI3_BAND_SCREEN_UNLOCK;
 import static nodomain.freeyourgadget.gadgetbridge.model.ActivityUser.PREF_USER_HEIGHT_CM;
 import static nodomain.freeyourgadget.gadgetbridge.model.ActivityUser.PREF_USER_SLEEP_DURATION;
 import static nodomain.freeyourgadget.gadgetbridge.model.ActivityUser.PREF_USER_STEPS_GOAL;
@@ -326,8 +329,98 @@ public class SettingsActivity extends AbstractSettingsActivity {
             }
         });
 
+        pref = findPreference("auto_fetch_interval_limit");
+        pref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object autoFetchInterval) {
+                String summary = String.format(
+                        getApplicationContext().getString(R.string.pref_auto_fetch_limit_fetches_summary),
+                        Integer.valueOf((String) autoFetchInterval));
+                preference.setSummary(summary);
+                return true;
+            }
+        });
+
+        int autoFetchInterval = GBApplication.getPrefs().getInt("auto_fetch_interval_limit", 0);
+        summary = String.format(
+                getApplicationContext().getString(R.string.pref_auto_fetch_limit_fetches_summary),
+                autoFetchInterval);
+        pref.setSummary(summary);
+
+
+
         final Preference displayPages = findPreference("bip_display_items");
         displayPages.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newVal) {
+                invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        GBApplication.deviceService().onSendConfiguration(PREF_MI2_DISPLAY_ITEMS);
+                    }
+                });
+                return true;
+            }
+        });
+
+        final Preference setDateFormat = findPreference(PREF_MI2_DATEFORMAT);
+        setDateFormat.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newVal) {
+                invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        GBApplication.deviceService().onSendConfiguration(PREF_MI2_DATEFORMAT);
+                    }
+                });
+                return true;
+            }
+        });
+
+        final Preference miBand2DisplayItems = findPreference(PREF_MI2_DISPLAY_ITEMS);
+        miBand2DisplayItems.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newVal) {
+                invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        GBApplication.deviceService().onSendConfiguration(PREF_MI2_DISPLAY_ITEMS);
+                    }
+                });
+                return true;
+            }
+        });
+
+        final Preference miBand3ScreenUnlock = findPreference(PREF_MI3_BAND_SCREEN_UNLOCK);
+        miBand3ScreenUnlock.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newVal) {
+                invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        GBApplication.deviceService().onSendConfiguration(PREF_MI3_BAND_SCREEN_UNLOCK);
+                    }
+                });
+                return true;
+            }
+        });
+
+        final Preference miBand3DisplayItems = findPreference("miband3_display_items");
+        miBand3DisplayItems.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newVal) {
+                invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        GBApplication.deviceService().onSendConfiguration(PREF_MI2_DISPLAY_ITEMS);
+                    }
+                });
+                return true;
+            }
+        });
+
+        final Preference corDisplayItems = findPreference("cor_display_items");
+        corDisplayItems.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newVal) {
                 invokeLater(new Runnable() {
@@ -398,13 +491,18 @@ public class SettingsActivity extends AbstractSettingsActivity {
         try {
             return AndroidUtils.getFilePath(getApplicationContext(), uri);
         } catch (IllegalArgumentException e) {
-            Cursor cursor = getContentResolver().query(
-                    uri,
-                    new String[] { DocumentsContract.Document.COLUMN_DISPLAY_NAME },
-                    null, null, null, null
-            );
-            if (cursor != null && cursor.moveToFirst()) {
-                return cursor.getString(cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME));
+            try {
+                Cursor cursor = getContentResolver().query(
+                        uri,
+                        new String[]{DocumentsContract.Document.COLUMN_DISPLAY_NAME},
+                        null, null, null, null
+                );
+                if (cursor != null && cursor.moveToFirst()) {
+                    return cursor.getString(cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME));
+                }
+            }
+            catch (Exception fdfsdfds) {
+                LOG.warn("fuck");
             }
         }
         return "";
@@ -463,6 +561,7 @@ public class SettingsActivity extends AbstractSettingsActivity {
                 PREF_USER_WEIGHT_KG,
                 PREF_USER_SLEEP_DURATION,
                 PREF_USER_STEPS_GOAL,
+                PREF_MI2_ENABLE_TEXT_NOTIFICATIONS,
                 "weather_city",
         };
     }

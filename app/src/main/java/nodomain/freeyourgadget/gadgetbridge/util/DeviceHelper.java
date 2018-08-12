@@ -1,5 +1,6 @@
-/*  Copyright (C) 2015-2018 0nse, Andreas Shimokawa, Carsten Pfeiffer, Daniele
-    Gobbetti, João Paulo Barraca, ladbsoft, protomors, Quallenauge, Sami Alaoui
+/*  Copyright (C) 2015-2018 0nse, Andreas Shimokawa, Carsten Pfeiffer,
+    Daniele Gobbetti, João Paulo Barraca, ladbsoft, protomors, Quallenauge,
+    Sami Alaoui, tiparega
 
     This file is part of Gadgetbridge.
 
@@ -43,10 +44,13 @@ import nodomain.freeyourgadget.gadgetbridge.devices.UnknownDeviceCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.hplus.EXRIZUK8Coordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.hplus.HPlusCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.hplus.MakibesF68Coordinator;
+import nodomain.freeyourgadget.gadgetbridge.devices.hplus.Q8Coordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.huami.amazfitbip.AmazfitBipCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.huami.amazfitcor.AmazfitCorCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.huami.miband2.MiBand2Coordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.huami.miband2.MiBand2HRXCoordinator;
+import nodomain.freeyourgadget.gadgetbridge.devices.huami.miband3.MiBand3Coordinator;
+import nodomain.freeyourgadget.gadgetbridge.devices.id115.ID115Coordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.jyou.TeclastH30Coordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.liveview.LiveviewCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst;
@@ -54,7 +58,9 @@ import nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.no1f1.No1F1Coordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.pebble.PebbleCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.vibratissimo.VibratissimoCoordinator;
+import nodomain.freeyourgadget.gadgetbridge.devices.watch9.Watch9DeviceCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.xwatch.XWatchCoordinator;
+import nodomain.freeyourgadget.gadgetbridge.devices.zetime.ZeTimeCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.entities.Device;
 import nodomain.freeyourgadget.gadgetbridge.entities.DeviceAttributes;
 import nodomain.freeyourgadget.gadgetbridge.impl.GBDevice;
@@ -194,6 +200,7 @@ public class DeviceHelper {
         List<DeviceCoordinator> result = new ArrayList<>();
         result.add(new AmazfitBipCoordinator()); // Note: must come before MiBand2 because detection is hacky, atm
         result.add(new AmazfitCorCoordinator()); // Note: must come before MiBand2 because detection is hacky, atm
+        result.add(new MiBand3Coordinator());  // Note: must come before MiBand2 because detection is hacky, atm
         result.add(new MiBand2HRXCoordinator()); // Note: must come before MiBand2 because detection is hacky, atm
         result.add(new MiBand2Coordinator()); // Note: MiBand2 must come before MiBand because detection is hacky, atm
         result.add(new MiBandCoordinator());
@@ -203,9 +210,13 @@ public class DeviceHelper {
         result.add(new HPlusCoordinator());
         result.add(new No1F1Coordinator());
         result.add(new MakibesF68Coordinator());
+        result.add(new Q8Coordinator());
         result.add(new EXRIZUK8Coordinator());
         result.add(new TeclastH30Coordinator());
         result.add(new XWatchCoordinator());
+        result.add(new ZeTimeCoordinator());
+        result.add(new ID115Coordinator());
+        result.add(new Watch9DeviceCoordinator());
 
         return result;
     }

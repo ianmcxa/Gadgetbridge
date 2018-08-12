@@ -1,6 +1,7 @@
 /*  Copyright (C) 2015-2018 Andreas Shimokawa, Avamander, Carsten Pfeiffer,
     Daniele Gobbetti, Daniel Hauck, Frank Slezak, ivanovlev, João Paulo Barraca,
-    Julien Pivotto, Kasha, Sergey Trofimov, Steffen Liebergeld, Uwe Hermann
+    Julien Pivotto, Kasha, Sergey Trofimov, Steffen Liebergeld, Taavi Eomäe,
+    Uwe Hermann
 
     This file is part of Gadgetbridge.
 
@@ -69,6 +70,7 @@ import nodomain.freeyourgadget.gadgetbridge.model.MusicStateSpec;
 import nodomain.freeyourgadget.gadgetbridge.model.NotificationSpec;
 import nodomain.freeyourgadget.gadgetbridge.model.NotificationType;
 import nodomain.freeyourgadget.gadgetbridge.model.WeatherSpec;
+import nodomain.freeyourgadget.gadgetbridge.service.receivers.GBAutoFetchReceiver;
 import nodomain.freeyourgadget.gadgetbridge.util.DeviceHelper;
 import nodomain.freeyourgadget.gadgetbridge.util.GB;
 import nodomain.freeyourgadget.gadgetbridge.util.GBPrefs;
@@ -127,7 +129,6 @@ import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_CAN
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_CANNEDMESSAGES_TYPE;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_CONFIG;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_CONNECT_FIRST_TIME;
-import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_RECORDED_DATA_TYPES;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_FIND_START;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_INTERVAL_SECONDS;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_MUSIC_ALBUM;
@@ -147,10 +148,12 @@ import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOT
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOTIFICATION_PEBBLE_COLOR;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOTIFICATION_PHONENUMBER;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOTIFICATION_SENDER;
+import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOTIFICATION_SOURCEAPPID;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOTIFICATION_SOURCENAME;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOTIFICATION_SUBJECT;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOTIFICATION_TITLE;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOTIFICATION_TYPE;
+import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_RECORDED_DATA_TYPES;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_URI;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_VIBRATION_INTENSITY;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_WEATHER;
@@ -174,6 +177,7 @@ public class DeviceCommunicationService extends Service implements SharedPrefere
     private BluetoothConnectReceiver mBlueToothConnectReceiver = null;
     private BluetoothPairingRequestReceiver mBlueToothPairingRequestReceiver = null;
     private AlarmClockReceiver mAlarmClockReceiver = null;
+    private GBAutoFetchReceiver mGBAutoFetchReceiver = null;
 
     private AlarmReceiver mAlarmReceiver = null;
     private CalendarReceiver mCalendarReceiver = null;
@@ -217,7 +221,6 @@ public class DeviceCommunicationService extends Service implements SharedPrefere
                     mGBDevice = device;
                     boolean enableReceivers = mDeviceSupport != null && (mDeviceSupport.useAutoConnect() || mGBDevice.isInitialized());
                     setReceiversEnableState(enableReceivers, mGBDevice.isInitialized(), DeviceHelper.getInstance().getCoordinator(device));
-                    GB.updateNotification(mGBDevice, context);
                 } else {
                     LOG.error("Got ACTION_DEVICE_CHANGED from unexpected device: " + device);
                 }
@@ -346,6 +349,7 @@ public class DeviceCommunicationService extends Service implements SharedPrefere
                 notificationSpec.pebbleColor = (byte) intent.getSerializableExtra(EXTRA_NOTIFICATION_PEBBLE_COLOR);
                 notificationSpec.id = intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1);
                 notificationSpec.flags = intent.getIntExtra(EXTRA_NOTIFICATION_FLAGS, 0);
+                notificationSpec.sourceAppId = intent.getStringExtra(EXTRA_NOTIFICATION_SOURCEAPPID);
 
                 if (notificationSpec.type == NotificationType.GENERIC_SMS && notificationSpec.phoneNumber != null) {
                     notificationSpec.id = mRandom.nextInt(); // FIXME: add this in external SMS Receiver?
@@ -635,7 +639,7 @@ public class DeviceCommunicationService extends Service implements SharedPrefere
                 mPebbleReceiver = new PebbleReceiver();
                 registerReceiver(mPebbleReceiver, new IntentFilter("com.getpebble.action.SEND_NOTIFICATION"));
             }
-            if (mMusicPlaybackReceiver == null) {
+            if (mMusicPlaybackReceiver == null && coordinator != null && coordinator.supportsMusicInfo()) {
                 mMusicPlaybackReceiver = new MusicPlaybackReceiver();
                 IntentFilter filter = new IntentFilter();
                 for (String action : mMusicActions) {
@@ -663,6 +667,8 @@ public class DeviceCommunicationService extends Service implements SharedPrefere
                 IntentFilter filter = new IntentFilter();
                 filter.addAction(AlarmClockReceiver.ALARM_ALERT_ACTION);
                 filter.addAction(AlarmClockReceiver.ALARM_DONE_ACTION);
+                filter.addAction(AlarmClockReceiver.GOOGLE_CLOCK_ALARM_ALERT_ACTION);
+                filter.addAction(AlarmClockReceiver.GOOGLE_CLOCK_ALARM_DONE_ACTION);
                 registerReceiver(mAlarmClockReceiver, filter);
             }
             if (mCMWeatherReceiver == null && coordinator != null && coordinator.supportsWeather()) {
@@ -676,6 +682,11 @@ public class DeviceCommunicationService extends Service implements SharedPrefere
                 } catch (PackageManager.NameNotFoundException e) {
                     //Nothing wrong, it just means we're not running on omnirom.
                 }
+            }
+            if (GBApplication.getPrefs().getBoolean("auto_fetch_enabled", false) &&
+                    coordinator != null && coordinator.supportsActivityDataFetching() && mGBAutoFetchReceiver == null) {
+                mGBAutoFetchReceiver = new GBAutoFetchReceiver();
+                registerReceiver(mGBAutoFetchReceiver, new IntentFilter("android.intent.action.USER_PRESENT"));
             }
         } else {
             if (mPhoneCallReceiver != null) {
@@ -717,6 +728,10 @@ public class DeviceCommunicationService extends Service implements SharedPrefere
             }
             if (mOmniJawsObserver != null) {
                 getContentResolver().unregisterContentObserver(mOmniJawsObserver);
+            }
+            if (mGBAutoFetchReceiver != null) {
+                unregisterReceiver(mGBAutoFetchReceiver);
+                mGBAutoFetchReceiver = null;
             }
         }
     }

@@ -86,6 +86,15 @@
         <item>right</item>
     </string-array>
 
+    <string-array name="orientation">
+        <item>@string/horizontal</item>
+        <item>@string/vertical</item>
+    </string-array>
+    <string-array name="orientation_values">
+        <item>horizontal</item>
+        <item>vertical</item>
+    </string-array>
+
     <string-array name="vibration_profile">
         <item>@string/vibration_profile_staccato</item>
         <item>@string/vibration_profile_short</item>
@@ -183,7 +192,33 @@
         <item>@string/p_battery</item>
     </string-array>
 
+    <string-array name="pref_miband3_display_items">
+        <item>@string/menuitem_notifications</item>
+        <item>@string/menuitem_weather</item>
+        <item>@string/menuitem_more</item>
+        <item>@string/menuitem_status</item>
+        <item>@string/heart_rate</item>
+    </string-array>
+
+    <string-array name="pref_miband3_display_items_values">
+        <item>@string/p_menuitem_notifications</item>
+        <item>@string/p_menuitem_weather</item>
+        <item>@string/p_menuitem_more</item>
+        <item>@string/p_menuitem_status</item>
+        <item>@string/p_heart_rate</item>
+    </string-array>
+
+    <string-array name="pref_miband3_display_items_default">
+        <item>@string/p_menuitem_notifications</item>
+        <item>@string/p_menuitem_weather</item>
+        <item>@string/p_menuitem_more</item>
+        <item>@string/p_menuitem_status</item>
+        <item>@string/p_heart_rate</item>
+    </string-array>
+
     <string-array name="pref_bip_display_items">
+        <item>@string/menuitem_shortcut_alipay</item>
+        <item>@string/menuitem_shortcut_weather</item>
         <item>@string/menuitem_status</item>
         <item>@string/menuitem_activity</item>
         <item>@string/menuitem_weather</item>
@@ -195,6 +230,8 @@
     </string-array>
 
     <string-array name="pref_bip_display_items_values">
+        <item>@string/p_menuitem_shortcut_alipay</item>
+        <item>@string/p_menuitem_shortcut_weather</item>
         <item>@string/p_menuitem_status</item>
         <item>@string/p_menuitem_activity</item>
         <item>@string/p_menuitem_weather</item>
@@ -204,6 +241,7 @@
         <item>@string/p_menuitem_settings</item>
         <item>@string/p_menuitem_alipay</item>
     </string-array>
+
     <string-array name="pref_bip_display_items_default">
         <item>@string/p_menuitem_status</item>
         <item>@string/p_menuitem_activity</item>
@@ -213,6 +251,42 @@
         <item>@string/p_menuitem_compass</item>
         <item>@string/p_menuitem_settings</item>
     </string-array>
+
+    <string-array name="pref_cor_display_items">
+        <item>@string/menuitem_status</item>
+        <item>@string/menuitem_notifications</item>
+        <item>@string/menuitem_activity</item>
+        <item>@string/menuitem_weather</item>
+        <item>@string/menuitem_alarm</item>
+        <item>@string/menuitem_timer</item>
+        <item>@string/menuitem_settings</item>
+        <item>@string/menuitem_alipay</item>
+        <item>@string/menuitem_music</item>
+    </string-array>
+
+    <string-array name="pref_cor_display_items_values">
+        <item>@string/p_menuitem_status</item>
+        <item>@string/p_menuitem_notifications</item>
+        <item>@string/p_menuitem_activity</item>
+        <item>@string/p_menuitem_weather</item>
+        <item>@string/p_menuitem_alarm</item>
+        <item>@string/p_menuitem_timer</item>
+        <item>@string/p_menuitem_settings</item>
+        <item>@string/p_menuitem_alipay</item>
+        <item>@string/p_menuitem_music</item>
+    </string-array>
+
+    <string-array name="pref_cor_display_items_default">
+        <item>@string/p_menuitem_status</item>
+        <item>@string/p_menuitem_notifications</item>
+        <item>@string/p_menuitem_activity</item>
+        <item>@string/p_menuitem_weather</item>
+        <item>@string/p_menuitem_alarm</item>
+        <item>@string/p_menuitem_timer</item>
+        <item>@string/p_menuitem_settings</item>
+        <item>@string/p_menuitem_music</item>
+    </string-array>
+
 
     <string-array name="pref_entries_unit_system">
         <item>@string/unit_metric</item>
@@ -254,6 +328,7 @@
         <item name="1">@string/traditional_chinese</item>
         <item name="2">@string/english</item>
         <item name="3">@string/spanish</item>
+        <item name="4">@string/russian</item>
     </string-array>
 
     <string-array name="pref_amazfitbip_language_values">
@@ -262,6 +337,7 @@
         <item>1</item>
         <item>2</item>
         <item>3</item>
+        <item>4</item>
     </string-array>
 
     <string-array name="prefs_heartrate_measurement_interval">

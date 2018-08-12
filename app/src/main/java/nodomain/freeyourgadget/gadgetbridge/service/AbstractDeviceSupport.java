@@ -1,5 +1,5 @@
 /*  Copyright (C) 2015-2018 Andreas Shimokawa, Carsten Pfeiffer, Daniele
-    Gobbetti
+    Gobbetti, Taavi Eomäe
 
     This file is part of Gadgetbridge.
 
@@ -199,7 +199,7 @@ public abstract class AbstractDeviceSupport implements DeviceSupport {
 
     protected void handleGBDeviceEvent(GBDeviceEventVersionInfo infoEvent) {
         Context context = getContext();
-        LOG.info("Got event for VERSION_INFO");
+        LOG.info("Got event for VERSION_INFO: " + infoEvent);
         if (gbDevice == null) {
             return;
         }

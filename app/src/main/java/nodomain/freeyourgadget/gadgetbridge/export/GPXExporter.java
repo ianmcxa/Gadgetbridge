@@ -1,3 +1,19 @@
+/*  Copyright (C) 2017-2018 AndrewH, Carsten Pfeiffer, Daniele Gobbetti
+
+    This file is part of Gadgetbridge.
+
+    Gadgetbridge is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Gadgetbridge is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 package nodomain.freeyourgadget.gadgetbridge.export;
 
 import android.support.annotation.NonNull;
@@ -115,7 +131,7 @@ public class GPXExporter implements ActivityTrackExporter {
         ser.attribute(NS_DEFAULT, "lon", formatLocation(location.getLongitude()));
         ser.attribute(NS_DEFAULT, "lat", formatLocation(location.getLatitude()));
         ser.startTag(NS_DEFAULT, "ele").text(formatLocation(location.getAltitude())).endTag(NS_DEFAULT, "ele");
-        ser.startTag(NS_DEFAULT, "time").text(formatTime(point.getTime())).endTag(NS_DEFAULT, "time");
+        ser.startTag(NS_DEFAULT, "time").text(DateTimeUtils.formatIso8601UTC(point.getTime())).endTag(NS_DEFAULT, "time");
         String description = point.getDescription();
         if (description != null) {
             ser.startTag(NS_DEFAULT, "desc").text(description).endTag(NS_DEFAULT, "desc");
