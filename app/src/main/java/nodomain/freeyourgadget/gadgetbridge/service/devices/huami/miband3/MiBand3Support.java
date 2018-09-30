@@ -1,4 +1,4 @@
-/*  Copyright (C) 2017-2018 Andreas Shimokawa, Carsten Pfeiffer
+/*  Copyright (C) 2017-2018 Andreas Shimokawa, Carsten Pfeiffer, José Rebelo
 
     This file is part of Gadgetbridge.
 
@@ -24,6 +24,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.Set;
 
 import nodomain.freeyourgadget.gadgetbridge.GBApplication;
@@ -59,6 +63,10 @@ public class MiBand3Support extends AmazfitBipSupport {
                 command[1] |= 0x04;
                 command[5] = pos++;
             }
+            if (pages.contains("activity")) {
+                command[1] |= 0x08;
+                command[6] = pos++;
+            }
             if (pages.contains("more")) {
                 command[1] |= 0x10;
                 command[7] = pos++;
@@ -93,6 +101,11 @@ public class MiBand3Support extends AmazfitBipSupport {
                 case MiBandConst.PREF_MI3_BAND_SCREEN_UNLOCK:
                     setBandScreenUnlock(builder);
                     break;
+                case MiBandConst.PREF_MI3_NIGHT_MODE:
+                case MiBandConst.PREF_MI3_NIGHT_MODE_START:
+                case MiBandConst.PREF_MI3_NIGHT_MODE_END:
+                    setNightMode(builder);
+                    break;
                 default:
                     super.onSendConfiguration(config);
                     return;
@@ -101,6 +114,29 @@ public class MiBand3Support extends AmazfitBipSupport {
         } catch (IOException e) {
             GB.toast("Error setting configuration", Toast.LENGTH_LONG, GB.ERROR, e);
         }
+    }
+
+    @Override
+    protected MiBand3Support setLanguage(TransactionBuilder builder) {
+        String localeString = GBApplication.getPrefs().getString("miband3_language", "auto");
+
+        if (localeString.equals("auto")) {
+            String language = Locale.getDefault().getLanguage();
+            String country = Locale.getDefault().getCountry();
+
+            if (country == null) {
+                // sometimes country is null, no idea why, guess it.
+                country = language;
+            }
+            localeString = language + "_" + country.toUpperCase();
+        }
+        LOG.info("Setting device to locale: " + localeString);
+        byte[] command_new = HuamiService.COMMAND_SET_LANGUAGE_NEW_TEMPLATE.clone();
+        System.arraycopy(localeString.getBytes(), 0, command_new, 3, localeString.getBytes().length);
+
+        builder.write(getCharacteristic(HuamiService.UUID_CHARACTERISTIC_3_CONFIGURATION), command_new);
+
+        return this;
     }
 
     private MiBand3Support setBandScreenUnlock(TransactionBuilder builder) {
@@ -116,11 +152,48 @@ public class MiBand3Support extends AmazfitBipSupport {
         return this;
     }
 
+    private MiBand3Support setNightMode(TransactionBuilder builder) {
+        String nightMode = MiBand3Coordinator.getNightMode();
+        LOG.info("Setting night mode to " + nightMode);
+
+        switch (nightMode) {
+            case MiBandConst.PREF_MI3_NIGHT_MODE_SUNSET:
+                builder.write(getCharacteristic(HuamiService.UUID_CHARACTERISTIC_3_CONFIGURATION), MiBand3Service.COMMAND_NIGHT_MODE_SUNSET);
+                break;
+            case MiBandConst.PREF_MI3_NIGHT_MODE_OFF:
+                builder.write(getCharacteristic(HuamiService.UUID_CHARACTERISTIC_3_CONFIGURATION), MiBand3Service.COMMAND_NIGHT_MODE_OFF);
+                break;
+            case MiBandConst.PREF_MI3_NIGHT_MODE_SCHEDULED:
+                byte[] cmd = MiBand3Service.COMMAND_NIGHT_MODE_SCHEDULED.clone();
+
+                Calendar calendar = GregorianCalendar.getInstance();
+
+                Date start = MiBand3Coordinator.getNightModeStart();
+                calendar.setTime(start);
+                cmd[2] = (byte) calendar.get(Calendar.HOUR_OF_DAY);
+                cmd[3] = (byte) calendar.get(Calendar.MINUTE);
+
+                Date end = MiBand3Coordinator.getNightModeEnd();
+                calendar.setTime(end);
+                cmd[4] = (byte) calendar.get(Calendar.HOUR_OF_DAY);
+                cmd[5] = (byte) calendar.get(Calendar.MINUTE);
+
+                builder.write(getCharacteristic(HuamiService.UUID_CHARACTERISTIC_3_CONFIGURATION), cmd);
+                break;
+            default:
+                LOG.error("Invalid night mode: " + nightMode);
+                break;
+        }
+
+        return this;
+    }
+
     @Override
     public void phase2Initialize(TransactionBuilder builder) {
         super.phase2Initialize(builder);
         LOG.info("phase2Initialize...");
         setBandScreenUnlock(builder);
+        setNightMode(builder);
     }
 
     @Override

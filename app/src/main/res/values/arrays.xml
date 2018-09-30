@@ -170,6 +170,21 @@
         <item>@string/p_scheduled</item>
     </string-array>
 
+    <string-array name="mi3_night_mode">
+        <item>@string/off</item>
+        <!--
+        <item>@string/mi3_night_mode_sunset</item>
+        -->
+        <item>@string/mi2_dnd_scheduled</item>
+    </string-array>
+    <string-array name="mi3_night_mode_values">
+        <item>@string/p_off</item>
+        <!--
+        <item>@string/p_sunset</item>
+        -->
+        <item>@string/p_scheduled</item>
+    </string-array>
+
     <string-array name="pref_mi2_display_items">
         <item>@string/chart_steps</item>
         <item>@string/distance</item>
@@ -195,6 +210,7 @@
     <string-array name="pref_miband3_display_items">
         <item>@string/menuitem_notifications</item>
         <item>@string/menuitem_weather</item>
+        <item>@string/menuitem_activity</item>
         <item>@string/menuitem_more</item>
         <item>@string/menuitem_status</item>
         <item>@string/heart_rate</item>
@@ -203,6 +219,7 @@
     <string-array name="pref_miband3_display_items_values">
         <item>@string/p_menuitem_notifications</item>
         <item>@string/p_menuitem_weather</item>
+        <item>@string/p_menuitem_activity</item>
         <item>@string/p_menuitem_more</item>
         <item>@string/p_menuitem_status</item>
         <item>@string/p_heart_rate</item>
@@ -211,6 +228,7 @@
     <string-array name="pref_miband3_display_items_default">
         <item>@string/p_menuitem_notifications</item>
         <item>@string/p_menuitem_weather</item>
+        <item>@string/p_menuitem_activity</item>
         <item>@string/p_menuitem_more</item>
         <item>@string/p_menuitem_status</item>
         <item>@string/p_heart_rate</item>
@@ -340,6 +358,36 @@
         <item>4</item>
     </string-array>
 
+    <string-array name="pref_miband3_language">
+        <item name="auto">@string/automatic</item>
+        <item name="zh_CH">@string/simplified_chinese</item>
+        <item name="zh_TW">@string/traditional_chinese</item>
+        <item name="en_US">@string/english</item>
+        <item name="es_ES">@string/spanish</item>
+        <item name="ru_RU">@string/russian</item>
+        <item name="de_DE">@string/german</item>
+        <item name="it_IT">@string/italian</item>
+        <item name="fr_FR">@string/french</item>
+        <item name="pl_PL">@string/polish</item>
+        <item name="ja_JP">@string/japanese</item>
+        <item name="ko_KO">@string/korean</item>
+    </string-array>
+
+    <string-array name="pref_miband3_language_values">
+        <item>auto</item>
+        <item>zh_CH</item>
+        <item>zh_TW</item>
+        <item>en_US</item>
+        <item>es_ES</item>
+        <item>ru_RU</item>
+        <item>de_DE</item>
+        <item>it_IT</item>
+        <item>fr_FR</item>
+        <item>pl_PL</item>
+        <item>ja_JP</item>
+        <item>ko_KO</item>
+    </string-array>
+
     <string-array name="prefs_heartrate_measurement_interval">
         <item name="0">@string/off</item>
         <item name="60">@string/interval_one_minute</item>
@@ -357,4 +405,28 @@
         <item>1800</item>
         <item>3600</item>
     </string-array>
+
+    <string-array name="notifications_timeout">
+        <item>@string/no_limit</item>
+        <item>@string/seconds_5</item>
+        <item>@string/seconds_10</item>
+        <item>@string/seconds_20</item>
+        <item>@string/seconds_30</item>
+        <item>@string/minutes_1</item>
+        <item>@string/minutes_5</item>
+        <item>@string/minutes_10</item>
+        <item>@string/minutes_30</item>
+    </string-array>
+    <string-array name="notifications_timeout_values">
+        <item>0</item>
+        <item>5</item>
+        <item>10</item>
+        <item>20</item>
+        <item>30</item>
+        <item>60</item>
+        <item>300</item>
+        <item>600</item>
+        <item>1800</item>
+    </string-array>
+
 </resources>

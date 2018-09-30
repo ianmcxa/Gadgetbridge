@@ -1,7 +1,7 @@
 /*  Copyright (C) 2015-2018 Andreas Shimokawa, Avamander, Carsten Pfeiffer,
-    Daniele Gobbetti, Daniel Hauck, Frank Slezak, ivanovlev, João Paulo Barraca,
-    Julien Pivotto, Kasha, Sergey Trofimov, Steffen Liebergeld, Taavi Eomäe,
-    Uwe Hermann
+    dakhnod, Daniele Gobbetti, Daniel Hauck, Frank Slezak, ivanovlev, João Paulo
+    Barraca, Julien Pivotto, Kasha, Martin, Sergey Trofimov, Steffen Liebergeld,
+    Taavi Eomäe, Uwe Hermann
 
     This file is part of Gadgetbridge.
 
@@ -47,6 +47,7 @@ import java.util.UUID;
 
 import nodomain.freeyourgadget.gadgetbridge.GBApplication;
 import nodomain.freeyourgadget.gadgetbridge.R;
+import nodomain.freeyourgadget.gadgetbridge.activities.HeartRateUtils;
 import nodomain.freeyourgadget.gadgetbridge.devices.DeviceCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.externalevents.AlarmClockReceiver;
 import nodomain.freeyourgadget.gadgetbridge.externalevents.AlarmReceiver;
@@ -105,7 +106,9 @@ import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_SE
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_SETTIME;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_SET_ALARMS;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_SET_CONSTANT_VIBRATION;
+import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_SET_FM_FREQUENCY;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_SET_HEARTRATE_MEASUREMENT_INTERVAL;
+import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_SET_LED_COLOR;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_START;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_STARTAPP;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_TEST_NEW_FUNCTION;
@@ -130,7 +133,9 @@ import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_CAN
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_CONFIG;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_CONNECT_FIRST_TIME;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_FIND_START;
+import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_FM_FREQUENCY;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_INTERVAL_SECONDS;
+import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_LED_COLOR;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_MUSIC_ALBUM;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_MUSIC_ARTIST;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_MUSIC_DURATION;
@@ -334,6 +339,19 @@ public class DeviceCommunicationService extends Service implements SharedPrefere
                     mGBDevice.sendDeviceUpdateIntent(this);
                 }
                 break;
+            default:
+                if (mDeviceSupport == null || mGBDevice == null) {
+                    LOG.warn("device support:" + mDeviceSupport + ", device: " + mGBDevice + ", aborting");
+                } else {
+                    handleAction(intent, action, prefs);
+                }
+                break;
+        }
+        return START_STICKY;
+    }
+
+    private void handleAction(Intent intent, String action, Prefs prefs) {
+        switch (action) {
             case ACTION_REQUEST_DEVICEINFO:
                 mGBDevice.sendDeviceUpdateIntent(this);
                 break;
@@ -524,7 +542,7 @@ public class DeviceCommunicationService extends Service implements SharedPrefere
                 break;
             }
             case ACTION_SET_HEARTRATE_MEASUREMENT_INTERVAL: {
-                Integer seconds = intent.getIntExtra(EXTRA_INTERVAL_SECONDS, 0);
+                int seconds = intent.getIntExtra(EXTRA_INTERVAL_SECONDS, 0);
                 mDeviceSupport.onSetHeartRateMeasurementInterval(seconds);
                 break;
             }
@@ -549,9 +567,19 @@ public class DeviceCommunicationService extends Service implements SharedPrefere
                 }
                 break;
             }
+            case ACTION_SET_LED_COLOR:
+                int color = intent.getIntExtra(EXTRA_LED_COLOR, 0);
+                if (color != 0) {
+                    mDeviceSupport.onSetLedColor(color);
+                }
+                break;
+            case ACTION_SET_FM_FREQUENCY:
+                float frequency = intent.getFloatExtra(EXTRA_FM_FREQUENCY, -1);
+                if (frequency != -1) {
+                    mDeviceSupport.onSetFmFrequency(frequency);
+                }
+                break;
         }
-
-        return START_STICKY;
     }
 
     /**
@@ -767,6 +795,9 @@ public class DeviceCommunicationService extends Service implements SharedPrefere
             if (mDeviceSupport != null) {
                 mDeviceSupport.setAutoReconnect(autoReconnect);
             }
+        }
+        if (GBPrefs.CHART_MAX_HEART_RATE.equals(key) || GBPrefs.CHART_MIN_HEART_RATE.equals(key)) {
+            HeartRateUtils.getInstance().updateCachedHeartRatePreferences();
         }
     }
 

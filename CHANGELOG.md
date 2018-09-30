@@ -1,5 +1,35 @@
 ### Changelog
 
+#### Version 0.30.0
+* Amazfit Bip + Mi Band 3: Support for right to left display (configurable) (#976)
+* Add Arabic, Bengali Farsi, Persian, Scandinavian transliteration
+* Add support for some Roidmi FM receivers
+* Mi Band 3: Allow enabling the "Workout" menu item
+* Mi Band 3: Support for night mode configuration
+* Huami devices: fix seldom activity/sports synchronization problem (#1264)
+* Preferences: Make minimum heart rate configurable (lower values will be disregarded) 
+* Preferences: Configure minimum time between notifications
+* Preferences: Group language settings
+* Attempt to fix BLE connection issues on Samsung S devices
+* Week sleep and steps charts: display balance (actual value vs. desired value) 
+* Live Activity: show current/maximum heart rate, display minute steps and total steps and more improvements
+* Live Activity: fix discrepancy between number of steps in Gadgetbridge and wearable device
+* Fix missing caller ID for incoming calls on Android 9
+* Support for easy sharing of log files via the Debug screen
+* Misc small bugfixes
+
+#### Version 0.29.1
+* Mi Band 3: Support setting language to to German, Italian, French, Polish, Japanese, Korean (read wiki)
+* Mi Band 3: Support flashing latest RES files
+* Mi Band 3: Fix notification text not being displayed
+* Mi Band 3/Cor/Bip: Display app name when no app specific icon is available
+* Teclast: add/improve H1 and H3 watch recognition
+* Support transliteration for Lithuanian and Bengali
+* Fix BLE reconnect issues in certain conditions
+* Various fixes for display issues on small screens
+* Fix some potential NPEs
+* WIP: Display start and end of sleep in statistics
+
 #### Version 0.29.0
 * New Device: Initial support for ID115
 * New Device: Initial support for Lenovo Watch9
