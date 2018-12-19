@@ -94,7 +94,7 @@ import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_FI
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_HEARTRATE_TEST;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_INSTALL;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_NOTIFICATION;
-import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_REBOOT;
+import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_RESET;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_REQUEST_APPINFO;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_REQUEST_DEVICEINFO;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.ACTION_REQUEST_SCREENSHOT;
@@ -147,6 +147,7 @@ import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_MUS
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_MUSIC_TRACK;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_MUSIC_TRACKCOUNT;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_MUSIC_TRACKNR;
+import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOTIFICATION_ACTIONS;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOTIFICATION_BODY;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOTIFICATION_FLAGS;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOTIFICATION_ID;
@@ -159,6 +160,7 @@ import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOT
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOTIFICATION_TITLE;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_NOTIFICATION_TYPE;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_RECORDED_DATA_TYPES;
+import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_RESET_FLAGS;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_URI;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_VIBRATION_INTENSITY;
 import static nodomain.freeyourgadget.gadgetbridge.model.DeviceService.EXTRA_WEATHER;
@@ -356,7 +358,8 @@ public class DeviceCommunicationService extends Service implements SharedPrefere
                 mGBDevice.sendDeviceUpdateIntent(this);
                 break;
             case ACTION_NOTIFICATION: {
-                NotificationSpec notificationSpec = new NotificationSpec();
+                int desiredId = intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1);
+                NotificationSpec notificationSpec = new NotificationSpec(desiredId);
                 notificationSpec.phoneNumber = intent.getStringExtra(EXTRA_NOTIFICATION_PHONENUMBER);
                 notificationSpec.sender = intent.getStringExtra(EXTRA_NOTIFICATION_SENDER);
                 notificationSpec.subject = intent.getStringExtra(EXTRA_NOTIFICATION_SUBJECT);
@@ -364,31 +367,29 @@ public class DeviceCommunicationService extends Service implements SharedPrefere
                 notificationSpec.body = intent.getStringExtra(EXTRA_NOTIFICATION_BODY);
                 notificationSpec.sourceName = intent.getStringExtra(EXTRA_NOTIFICATION_SOURCENAME);
                 notificationSpec.type = (NotificationType) intent.getSerializableExtra(EXTRA_NOTIFICATION_TYPE);
+                notificationSpec.attachedActions = (ArrayList<NotificationSpec.Action>) intent.getSerializableExtra(EXTRA_NOTIFICATION_ACTIONS);
                 notificationSpec.pebbleColor = (byte) intent.getSerializableExtra(EXTRA_NOTIFICATION_PEBBLE_COLOR);
-                notificationSpec.id = intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1);
                 notificationSpec.flags = intent.getIntExtra(EXTRA_NOTIFICATION_FLAGS, 0);
                 notificationSpec.sourceAppId = intent.getStringExtra(EXTRA_NOTIFICATION_SOURCEAPPID);
 
                 if (notificationSpec.type == NotificationType.GENERIC_SMS && notificationSpec.phoneNumber != null) {
-                    notificationSpec.id = mRandom.nextInt(); // FIXME: add this in external SMS Receiver?
-                    GBApplication.getIDSenderLookup().add(notificationSpec.id, notificationSpec.phoneNumber);
+                    GBApplication.getIDSenderLookup().add(notificationSpec.getId(), notificationSpec.phoneNumber);
                 }
 
-                if (((notificationSpec.flags & NotificationSpec.FLAG_WEARABLE_REPLY) > 0)
+                //TODO: check if at least one of the attached actions is a reply action instead?
+                if ((notificationSpec.attachedActions != null && notificationSpec.attachedActions.size() > 0)
                         || (notificationSpec.type == NotificationType.GENERIC_SMS && notificationSpec.phoneNumber != null)) {
                     // NOTE: maybe not where it belongs
-                    if (prefs.getBoolean("pebble_force_untested", false)) {
-                        // I would rather like to save that as an array in SharedPreferences
-                        // this would work but I dont know how to do the same in the Settings Activity's xml
-                        ArrayList<String> replies = new ArrayList<>();
-                        for (int i = 1; i <= 16; i++) {
-                            String reply = prefs.getString("canned_reply_" + i, null);
-                            if (reply != null && !reply.equals("")) {
-                                replies.add(reply);
-                            }
+                    // I would rather like to save that as an array in SharedPreferences
+                    // this would work but I dont know how to do the same in the Settings Activity's xml
+                    ArrayList<String> replies = new ArrayList<>();
+                    for (int i = 1; i <= 16; i++) {
+                        String reply = prefs.getString("canned_reply_" + i, null);
+                        if (reply != null && !reply.equals("")) {
+                            replies.add(reply);
                         }
-                        notificationSpec.cannedReplies = replies.toArray(new String[replies.size()]);
                     }
+                    notificationSpec.cannedReplies = replies.toArray(new String[replies.size()]);
                 }
 
                 mDeviceSupport.onNotification(notificationSpec);
@@ -416,8 +417,9 @@ public class DeviceCommunicationService extends Service implements SharedPrefere
                 mDeviceSupport.onDeleteCalendarEvent(type, id);
                 break;
             }
-            case ACTION_REBOOT: {
-                mDeviceSupport.onReboot();
+            case ACTION_RESET: {
+                int flags = intent.getIntExtra(EXTRA_RESET_FLAGS, 0);
+                mDeviceSupport.onReset(flags);
                 break;
             }
             case ACTION_HEARTRATE_TEST: {

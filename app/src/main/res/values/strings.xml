@@ -26,7 +26,10 @@
     <string name="controlcenter_calibrate_device">Calibrate Device</string>
 
 
+    <!-- Strings related to Debug Activity -->
     <string name="title_activity_debug">Debug</string>
+    <string name="debugactivity_really_factoryreset_title">Really factory reset?</string>
+    <string name="debugactivity_really_factoryreset">Doing a factory reset will delete all data from the connected device (if supported). In case of Xiaomi/Huami devices your Bluetooth MAC address will change, so it will appear as a new device to Gadgetbrige"</string>
 
     <!-- Strings related to AppManager -->
     <string name="title_activity_appmanager">App Manager</string>
@@ -109,7 +112,7 @@
     <string name="pref_title_rtl">Right-To-Left</string>
     <string name="pref_summary_rtl">Enable this if your device can not show right-to-left languages</string>
     <string name="pref_rtl_max_line_length">Right-To-Left Max Line Length</string>
-    <string name="pref_rtl_max_line_length_summary">Lengthens or shortens the lines Right-To-Left text is seperated into</string>
+    <string name="pref_rtl_max_line_length_summary">Lengthens or shortens the lines Right-To-Left text is separated into</string>
 
     <string name="always">Always</string>
     <string name="when_screen_off">When screen is off</string>
@@ -527,7 +530,7 @@
     <string name="dbmanagementactivity_overwrite">Overwrite</string>
     <string name="Cancel">Cancel</string>
     <string name="Delete">Delete</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
 
     <!-- Strings related to Vibration Activity -->
     <string name="title_activity_vibration">Vibration</string>
@@ -655,7 +658,7 @@
     <string name="pref_summary_contextual_arabic">Enable this to support contextual Arabic</string>
     <string name="preferences_rtl_settings">Right To Left Support</string>
     <string name="share_log">Share log</string>
-    <string name="share_log_warning">Please keep in mind Gadgetbridge log files may contain lots of personal information, including but not limited to health data, unique identifiers (such as a device MAC address), music preferences, etc. Consider editing the file and removing this information before sending the file to a public issue report.</string>
+    <string name="share_log_warning">Please keep in mind Gadgetbridge logs files that may contain lots of personal info, including but not limited to health data, unique identifiers (such as a device\'s MAC address), music preferences, etc. Consider editing the file and removing this info before sending the file to a public issue report.</string>
     <string name="warning">Warning!</string>
     <string name="no_data">No data</string>
 

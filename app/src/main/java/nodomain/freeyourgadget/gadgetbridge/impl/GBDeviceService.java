@@ -150,8 +150,9 @@ public class GBDeviceService implements DeviceService {
                 .putExtra(EXTRA_NOTIFICATION_SUBJECT, notificationSpec.subject)
                 .putExtra(EXTRA_NOTIFICATION_TITLE, notificationSpec.title)
                 .putExtra(EXTRA_NOTIFICATION_BODY, notificationSpec.body)
-                .putExtra(EXTRA_NOTIFICATION_ID, notificationSpec.id)
+                .putExtra(EXTRA_NOTIFICATION_ID, notificationSpec.getId())
                 .putExtra(EXTRA_NOTIFICATION_TYPE, notificationSpec.type)
+                .putExtra(EXTRA_NOTIFICATION_ACTIONS, notificationSpec.attachedActions)
                 .putExtra(EXTRA_NOTIFICATION_SOURCENAME, notificationSpec.sourceName)
                 .putExtra(EXTRA_NOTIFICATION_PEBBLE_COLOR, notificationSpec.pebbleColor)
                 .putExtra(EXTRA_NOTIFICATION_SOURCEAPPID, notificationSpec.sourceAppId);
@@ -290,8 +291,9 @@ public class GBDeviceService implements DeviceService {
     }
 
     @Override
-    public void onReboot() {
-        Intent intent = createIntent().setAction(ACTION_REBOOT);
+    public void onReset(int flags) {
+        Intent intent = createIntent().setAction(ACTION_RESET)
+                .putExtra(EXTRA_RESET_FLAGS, flags);
         invokeService(intent);
     }
 
