@@ -1,4 +1,5 @@
-/*  Copyright (C) 2018 Andreas Shimokawa, ladbsoft
+/*  Copyright (C) 2018-2019 Andreas Shimokawa, Carsten Pfeiffer, ladbsoft,
+    Sebastian Kranz
 
     This file is part of Gadgetbridge.
 
@@ -369,6 +370,11 @@ public class XWatchSupport extends AbstractBTLEDeviceSupport {
     @Override
     public void onSendConfiguration(String config) {
         // nothing yet
+    }
+
+    @Override
+    public void onReadConfiguration(String config) {
+
     }
 
     @Override

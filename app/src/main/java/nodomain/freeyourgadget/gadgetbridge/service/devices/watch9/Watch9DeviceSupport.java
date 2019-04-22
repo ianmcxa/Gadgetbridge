@@ -1,4 +1,5 @@
-/*  Copyright (C) 2018 maxirnilian
+/*  Copyright (C) 2018-2019 Andreas Shimokawa, Carsten Pfeiffer, Daniele
+    Gobbetti, maxirnilian, Sebastian Kranz
 
     This file is part of Gadgetbridge.
 
@@ -23,8 +24,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
-import android.support.annotation.IntRange;
-import android.support.v4.content.LocalBroadcastManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +36,8 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.UUID;
 
+import androidx.annotation.IntRange;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import nodomain.freeyourgadget.gadgetbridge.deviceevents.GBDeviceEventBatteryInfo;
 import nodomain.freeyourgadget.gadgetbridge.deviceevents.GBDeviceEventVersionInfo;
 import nodomain.freeyourgadget.gadgetbridge.devices.watch9.Watch9Constants;
@@ -504,6 +505,11 @@ public class Watch9DeviceSupport extends AbstractBTLEDeviceSupport {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onReadConfiguration(String config) {
+
     }
 
     @Override

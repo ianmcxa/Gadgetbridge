@@ -1,6 +1,6 @@
-/*  Copyright (C) 2015-2018 0nse, Andreas Shimokawa, Carsten Pfeiffer,
+/*  Copyright (C) 2015-2019 0nse, Andreas Shimokawa, Carsten Pfeiffer,
     Daniele Gobbetti, Felix Konstantin Maurer, José Rebelo, Martin, Normano64,
-    Pavel Elagin
+    Pavel Elagin, Sebastian Kranz
 
     This file is part of Gadgetbridge.
 
@@ -36,8 +36,6 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceManager;
 import android.provider.DocumentsContract;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 
 import org.slf4j.Logger;
@@ -48,6 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import androidx.core.app.ActivityCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import nodomain.freeyourgadget.gadgetbridge.BuildConfig;
 import nodomain.freeyourgadget.gadgetbridge.GBApplication;
 import nodomain.freeyourgadget.gadgetbridge.R;
@@ -55,6 +55,7 @@ import nodomain.freeyourgadget.gadgetbridge.database.PeriodicExporter;
 import nodomain.freeyourgadget.gadgetbridge.devices.DeviceManager;
 import nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst;
 import nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandPreferencesActivity;
+import nodomain.freeyourgadget.gadgetbridge.devices.zetime.ZeTimePreferenceActivity;
 import nodomain.freeyourgadget.gadgetbridge.model.CannedMessagesSpec;
 import nodomain.freeyourgadget.gadgetbridge.util.AndroidUtils;
 import nodomain.freeyourgadget.gadgetbridge.util.FileUtils;
@@ -62,8 +63,16 @@ import nodomain.freeyourgadget.gadgetbridge.util.GB;
 import nodomain.freeyourgadget.gadgetbridge.util.GBPrefs;
 import nodomain.freeyourgadget.gadgetbridge.util.Prefs;
 
+import static nodomain.freeyourgadget.gadgetbridge.devices.huami.HuamiConst.PREF_ACTIVATE_DISPLAY_ON_LIFT;
+import static nodomain.freeyourgadget.gadgetbridge.devices.huami.HuamiConst.PREF_DISCONNECT_NOTIFICATION;
+import static nodomain.freeyourgadget.gadgetbridge.devices.huami.HuamiConst.PREF_DISCONNECT_NOTIFICATION_END;
+import static nodomain.freeyourgadget.gadgetbridge.devices.huami.HuamiConst.PREF_DISCONNECT_NOTIFICATION_START;
+import static nodomain.freeyourgadget.gadgetbridge.devices.huami.HuamiConst.PREF_DISPLAY_ON_LIFT_END;
+import static nodomain.freeyourgadget.gadgetbridge.devices.huami.HuamiConst.PREF_DISPLAY_ON_LIFT_START;
 import static nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst.PREF_MI2_DATEFORMAT;
 import static nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst.PREF_MI2_DISPLAY_ITEMS;
+import static nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst.PREF_MI2_DO_NOT_DISTURB_OFF;
+import static nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst.PREF_MI2_DO_NOT_DISTURB_SCHEDULED;
 import static nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst.PREF_MI2_ENABLE_TEXT_NOTIFICATIONS;
 import static nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst.PREF_MI3_BAND_SCREEN_UNLOCK;
 import static nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst.PREF_MI3_NIGHT_MODE;
@@ -108,6 +117,15 @@ public class SettingsActivity extends AbstractSettingsActivity {
         pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 Intent enableIntent = new Intent(SettingsActivity.this, MiBandPreferencesActivity.class);
+                startActivity(enableIntent);
+                return true;
+            }
+        });
+
+        pref = findPreference("pref_key_zetime");
+        pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                Intent enableIntent = new Intent(SettingsActivity.this, ZeTimePreferenceActivity.class);
                 startActivity(enableIntent);
                 return true;
             }
@@ -490,6 +508,59 @@ public class SettingsActivity extends AbstractSettingsActivity {
                     @Override
                     public void run() {
                         GBApplication.deviceService().onSendConfiguration(PREF_MI2_DISPLAY_ITEMS);
+                    }
+                });
+                return true;
+            }
+        });
+
+        String disconnectNotificationState = prefs.getString(PREF_DISCONNECT_NOTIFICATION, PREF_MI2_DO_NOT_DISTURB_OFF);
+        boolean disconnectNotificationScheduled = disconnectNotificationState.equals(PREF_MI2_DO_NOT_DISTURB_SCHEDULED);
+
+        final Preference disconnectNotificationStart = findPreference(PREF_DISCONNECT_NOTIFICATION_START);
+        disconnectNotificationStart.setEnabled(disconnectNotificationScheduled);
+        disconnectNotificationStart.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newVal) {
+                invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        GBApplication.deviceService().onSendConfiguration(PREF_DISCONNECT_NOTIFICATION_START);
+                    }
+                });
+                return true;
+            }
+        });
+
+
+        final Preference disconnectNotificationEnd = findPreference(PREF_DISCONNECT_NOTIFICATION_END);
+        disconnectNotificationStart.setEnabled(disconnectNotificationScheduled);
+        disconnectNotificationStart.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newVal) {
+                invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        GBApplication.deviceService().onSendConfiguration(PREF_DISCONNECT_NOTIFICATION_END);
+                    }
+                });
+                return true;
+            }
+        });
+
+
+        final Preference disconnectNotification = findPreference(PREF_DISCONNECT_NOTIFICATION);
+        disconnectNotification.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newVal) {
+                final boolean scheduled = PREF_MI2_DO_NOT_DISTURB_SCHEDULED.equals(newVal.toString());
+
+                disconnectNotificationStart.setEnabled(scheduled);
+                disconnectNotificationEnd.setEnabled(scheduled);
+                invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        GBApplication.deviceService().onSendConfiguration(PREF_DISCONNECT_NOTIFICATION);
                     }
                 });
                 return true;

@@ -1,6 +1,7 @@
-/*  Copyright (C) 2015-2018 0nse, Andreas Shimokawa, Carsten Pfeiffer,
-    Daniele Gobbetti, João Paulo Barraca, Kranz, ladbsoft, maxirnilian,
-    protomors, Quallenauge, Sami Alaoui, tiparega, Vadim Kaushan
+/*  Copyright (C) 2015-2019 0nse, Andreas Böhler, Andreas Shimokawa, Carsten
+    Pfeiffer, Daniele Gobbetti, Jean-François Greffier, João Paulo Barraca,
+    José Rebelo, Kranz, ladbsoft, maxirnilian, protomors, Quallenauge, Sami
+    Alaoui, Sophanimus, tiparega, Vadim Kaushan
 
     This file is part of Gadgetbridge.
 
@@ -21,7 +22,6 @@ package nodomain.freeyourgadget.gadgetbridge.util;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.widget.Toast;
 
 import org.slf4j.Logger;
@@ -41,6 +41,7 @@ import nodomain.freeyourgadget.gadgetbridge.database.DBHandler;
 import nodomain.freeyourgadget.gadgetbridge.database.DBHelper;
 import nodomain.freeyourgadget.gadgetbridge.devices.DeviceCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.UnknownDeviceCoordinator;
+import nodomain.freeyourgadget.gadgetbridge.devices.jyou.BFH16DeviceCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.casiogb6900.CasioGB6900DeviceCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.hplus.EXRIZUK8Coordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.hplus.HPlusCoordinator;
@@ -53,13 +54,14 @@ import nodomain.freeyourgadget.gadgetbridge.devices.huami.miband2.MiBand2HRXCoor
 import nodomain.freeyourgadget.gadgetbridge.devices.huami.miband3.MiBand3Coordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.id115.ID115Coordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.jyou.TeclastH30Coordinator;
-import nodomain.freeyourgadget.gadgetbridge.devices.roidmi.Roidmi1Coordinator;
-import nodomain.freeyourgadget.gadgetbridge.devices.roidmi.Roidmi3Coordinator;
+import nodomain.freeyourgadget.gadgetbridge.devices.miscale2.MiScale2DeviceCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.liveview.LiveviewCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst;
 import nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.no1f1.No1F1Coordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.pebble.PebbleCoordinator;
+import nodomain.freeyourgadget.gadgetbridge.devices.roidmi.Roidmi1Coordinator;
+import nodomain.freeyourgadget.gadgetbridge.devices.roidmi.Roidmi3Coordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.vibratissimo.VibratissimoCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.watch9.Watch9DeviceCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.xwatch.XWatchCoordinator;
@@ -196,6 +198,7 @@ public class DeviceHelper {
 
     private List<DeviceCoordinator> createCoordinators() {
         List<DeviceCoordinator> result = new ArrayList<>();
+        result.add(new MiScale2DeviceCoordinator()); // Note: must come before MiBand2 because detection is hacky, atm
         result.add(new AmazfitBipCoordinator()); // Note: must come before MiBand2 because detection is hacky, atm
         result.add(new AmazfitCorCoordinator()); // Note: must come before MiBand2 because detection is hacky, atm
         result.add(new MiBand3Coordinator());  // Note: must come before MiBand2 because detection is hacky, atm
@@ -218,6 +221,7 @@ public class DeviceHelper {
         result.add(new Roidmi1Coordinator());
         result.add(new Roidmi3Coordinator());
         result.add(new CasioGB6900DeviceCoordinator());
+        result.add(new BFH16DeviceCoordinator());
 
         return result;
     }

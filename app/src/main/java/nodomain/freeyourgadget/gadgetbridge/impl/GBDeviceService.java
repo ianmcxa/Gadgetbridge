@@ -1,6 +1,6 @@
-/*  Copyright (C) 2015-2018 Alberto, Andreas Shimokawa, Carsten Pfeiffer,
-    criogenic, dakhnod, Frank Slezak, ivanovlev, Julien Pivotto, Kasha, Steffen
-    Liebergeld
+/*  Copyright (C) 2015-2019 Alberto, Andreas Shimokawa, Carsten Pfeiffer,
+    criogenic, dakhnod, Daniele Gobbetti, Frank Slezak, ivanovlev, José Rebelo,
+    Julien Pivotto, Kasha, Roi Greenberg, Sebastian Kranz, Steffen Liebergeld
 
     This file is part of Gadgetbridge.
 
@@ -24,11 +24,11 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
-import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.UUID;
 
+import androidx.annotation.Nullable;
 import nodomain.freeyourgadget.gadgetbridge.GBApplication;
 import nodomain.freeyourgadget.gadgetbridge.R;
 import nodomain.freeyourgadget.gadgetbridge.model.Alarm;
@@ -375,6 +375,13 @@ public class GBDeviceService implements DeviceService {
     @Override
     public void onSendConfiguration(String config) {
         Intent intent = createIntent().setAction(ACTION_SEND_CONFIGURATION)
+                .putExtra(EXTRA_CONFIG, config);
+        invokeService(intent);
+    }
+
+    @Override
+    public void onReadConfiguration(String config) {
+        Intent intent = createIntent().setAction(ACTION_READ_CONFIGURATION)
                 .putExtra(EXTRA_CONFIG, config);
         invokeService(intent);
     }

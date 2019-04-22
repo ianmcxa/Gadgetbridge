@@ -1,4 +1,5 @@
-/*  Copyright (C) 2017-2018 Andreas Shimokawa, João Paulo Barraca
+/*  Copyright (C) 2017-2019 Andreas Shimokawa, Daniele Gobbetti, João
+    Paulo Barraca, Matthieu Baerts
 
     This file is part of Gadgetbridge.
 
@@ -19,11 +20,14 @@ package nodomain.freeyourgadget.gadgetbridge.devices.huami.amazfitcor;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.NonNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import androidx.annotation.NonNull;
+
+import nodomain.freeyourgadget.gadgetbridge.activities.devicesettings.HuamiSettingsFragment;
+import nodomain.freeyourgadget.gadgetbridge.activities.devicesettings.DeviceSpecificSettingsFragment;
 import nodomain.freeyourgadget.gadgetbridge.devices.InstallHandler;
 import nodomain.freeyourgadget.gadgetbridge.devices.huami.HuamiCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.impl.GBDevice;
@@ -76,4 +80,14 @@ public class AmazfitCorCoordinator extends HuamiCoordinator {
 
     @Override
     public boolean supportsUnicodeEmojis() { return true; }
+
+    @Override
+    public boolean supportsDeviceSpecificSettings(GBDevice device) {
+        return true;
+    }
+
+    @Override
+    public DeviceSpecificSettingsFragment getDeviceSpecificSettingsFragment(GBDevice device) {
+        return HuamiSettingsFragment.newInstance(device.getAddress());
+    }
 }

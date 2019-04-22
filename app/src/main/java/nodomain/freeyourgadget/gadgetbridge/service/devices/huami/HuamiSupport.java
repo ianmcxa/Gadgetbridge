@@ -1,6 +1,6 @@
-/*  Copyright (C) 2015-2018 Andreas Shimokawa, Carsten Pfeiffer, Christian
+/*  Copyright (C) 2015-2019 Andreas Shimokawa, Carsten Pfeiffer, Christian
     Fischer, Daniele Gobbetti, JohnnySun, José Rebelo, Julien Pivotto, Kasha,
-    Michal Novotny, Sergey Trofimov, Steffen Liebergeld
+    Michal Novotny, Sebastian Kranz, Sergey Trofimov, Steffen Liebergeld
 
     This file is part of Gadgetbridge.
 
@@ -23,7 +23,6 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.format.DateFormat;
 import android.widget.Toast;
 
@@ -45,6 +44,7 @@ import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import nodomain.freeyourgadget.gadgetbridge.GBApplication;
 import nodomain.freeyourgadget.gadgetbridge.Logging;
 import nodomain.freeyourgadget.gadgetbridge.R;
@@ -59,6 +59,7 @@ import nodomain.freeyourgadget.gadgetbridge.deviceevents.GBDeviceEventVersionInf
 import nodomain.freeyourgadget.gadgetbridge.devices.DeviceCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.SampleProvider;
 import nodomain.freeyourgadget.gadgetbridge.devices.huami.ActivateDisplayOnLift;
+import nodomain.freeyourgadget.gadgetbridge.devices.huami.DisconnectNotificationSetting;
 import nodomain.freeyourgadget.gadgetbridge.devices.huami.HuamiConst;
 import nodomain.freeyourgadget.gadgetbridge.devices.huami.HuamiCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.huami.HuamiFWHelper;
@@ -72,7 +73,6 @@ import nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandConst;
 import nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandCoordinator;
 import nodomain.freeyourgadget.gadgetbridge.devices.miband.MiBandService;
 import nodomain.freeyourgadget.gadgetbridge.devices.miband.VibrationProfile;
-import nodomain.freeyourgadget.gadgetbridge.entities.AlarmDao;
 import nodomain.freeyourgadget.gadgetbridge.entities.DaoSession;
 import nodomain.freeyourgadget.gadgetbridge.entities.Device;
 import nodomain.freeyourgadget.gadgetbridge.entities.MiBandActivitySample;
@@ -1507,10 +1507,15 @@ public class HuamiSupport extends AbstractBTLEDeviceSupport {
                 case MiBandConst.PREF_MI2_GOAL_NOTIFICATION:
                     setGoalNotification(builder);
                     break;
-                case MiBandConst.PREF_ACTIVATE_DISPLAY_ON_LIFT:
-                case MiBandConst.PREF_DISPLAY_ON_LIFT_START:
-                case MiBandConst.PREF_DISPLAY_ON_LIFT_END:
+                case HuamiConst.PREF_ACTIVATE_DISPLAY_ON_LIFT:
+                case HuamiConst.PREF_DISPLAY_ON_LIFT_START:
+                case HuamiConst.PREF_DISPLAY_ON_LIFT_END:
                     setActivateDisplayOnLiftWrist(builder);
+                    break;
+                case HuamiConst.PREF_DISCONNECT_NOTIFICATION:
+                case HuamiConst.PREF_DISCONNECT_NOTIFICATION_START:
+                case HuamiConst.PREF_DISCONNECT_NOTIFICATION_END:
+                    setDisconnectNotification(builder);
                     break;
                 case MiBandConst.PREF_MI2_DISPLAY_ITEMS:
                     setDisplayItems(builder);
@@ -1543,6 +1548,11 @@ public class HuamiSupport extends AbstractBTLEDeviceSupport {
         } catch (IOException e) {
             GB.toast("Error setting configuration", Toast.LENGTH_LONG, GB.ERROR, e);
         }
+    }
+
+    @Override
+    public void onReadConfiguration(String config) {
+
     }
 
     @Override
@@ -1757,6 +1767,37 @@ public class HuamiSupport extends AbstractBTLEDeviceSupport {
         return this;
     }
 
+    private HuamiSupport setDisconnectNotification(TransactionBuilder builder) {
+        DisconnectNotificationSetting disconnectNotificationSetting = HuamiCoordinator.getDisconnectNotificationSetting(getContext());
+        LOG.info("Setting disconnect notification to " + disconnectNotificationSetting);
+
+        switch (disconnectNotificationSetting) {
+            case ON:
+                builder.write(getCharacteristic(HuamiService.UUID_CHARACTERISTIC_3_CONFIGURATION), HuamiService.COMMAND_ENABLE_DISCONNECT_NOTIFCATION);
+                break;
+            case OFF:
+                builder.write(getCharacteristic(HuamiService.UUID_CHARACTERISTIC_3_CONFIGURATION), HuamiService.COMMAND_DISABLE_DISCONNECT_NOTIFCATION);
+                break;
+            case SCHEDULED:
+                byte[] cmd = HuamiService.COMMAND_ENABLE_DISCONNECT_NOTIFCATION.clone();
+
+                Calendar calendar = GregorianCalendar.getInstance();
+
+                Date start = HuamiCoordinator.getDisconnectNotificationStart();
+                calendar.setTime(start);
+                cmd[4] = (byte) calendar.get(Calendar.HOUR_OF_DAY);
+                cmd[5] = (byte) calendar.get(Calendar.MINUTE);
+
+                Date end = HuamiCoordinator.getDisconnectNotificationEnd();
+                calendar.setTime(end);
+                cmd[6] = (byte) calendar.get(Calendar.HOUR_OF_DAY);
+                cmd[7] = (byte) calendar.get(Calendar.MINUTE);
+
+                builder.write(getCharacteristic(HuamiService.UUID_CHARACTERISTIC_3_CONFIGURATION), cmd);
+        }
+        return this;
+    }
+
     private HuamiSupport setDistanceUnit(TransactionBuilder builder) {
         MiBandConst.DistanceUnit unit = HuamiCoordinator.getDistanceUnit();
         LOG.info("Setting distance unit to " + unit);
@@ -1817,6 +1858,7 @@ public class HuamiSupport extends AbstractBTLEDeviceSupport {
         setGoalNotification(builder);
         setInactivityWarnings(builder);
         setHeartrateSleepSupport(builder);
+        setDisconnectNotification(builder);
         setHeartrateMeasurementInterval(builder, getHeartRateMeasurementInterval());
     }
 

@@ -1,4 +1,4 @@
-/*  Copyright (C) 2015-2018 Andreas Shimokawa, AndrewH, Carsten Pfeiffer,
+/*  Copyright (C) 2015-2019 Andreas Shimokawa, AndrewH, Carsten Pfeiffer,
     Daniele Gobbetti, Pavel Elagin
 
     This file is part of Gadgetbridge.
@@ -33,7 +33,6 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import nodomain.freeyourgadget.gadgetbridge.GBApplication;
-import nodomain.freeyourgadget.gadgetbridge.model.Alarm;
 
 public class DateTimeUtils {
     private static SimpleDateFormat DAY_STORAGE_FORMAT = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
